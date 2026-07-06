@@ -1,0 +1,21 @@
+{
+  "name": "ecotrack-novatic-waitlist",
+  "version": "1.0.0",
+  "description": "EcoTrack Novatic — production waitlist system (landing page + Supabase + Resend + MailerLite + admin dashboard) deployed as Vercel serverless functions.",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "resend": "^4.0.1"
+  },
+  "devDependencies": {
+    "vercel": "^37.0.0"
+  }
+}

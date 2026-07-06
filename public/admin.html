@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>EcoTrack Novatic — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#FFFFFF; --bg-soft:#F5FBF6; --green:#2E7D32; --green-light:#4CAF50;
+    --ink:#1A1A1A; --ink-soft:#5B6660; --border:#E7ECE8;
+    --font-display:'Manrope', sans-serif; --font-body:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:var(--font-body); background:var(--bg-soft); color:var(--ink);}
+  h1,h2,h3{font-family:var(--font-display); font-weight:800; letter-spacing:-0.01em;}
+  .wrap{max-width:1200px; margin:0 auto; padding:0 28px;}
+
+  /* login */
+  #loginScreen{min-height:100vh; display:flex; align-items:center; justify-content:center;}
+  .login-card{background:#fff; border:1px solid var(--border); border-radius:16px; padding:36px; width:100%; max-width:360px; box-shadow:0 20px 50px rgba(26,58,38,0.08);}
+  .login-card h1{font-size:20px; margin-bottom:6px;}
+  .login-card p{font-size:13.5px; color:var(--ink-soft); margin-bottom:20px;}
+  .login-card input{width:100%; border:1.5px solid var(--border); border-radius:9px; padding:11px 12px; font-size:14.5px; margin-bottom:12px;}
+  .login-card button{width:100%; background:var(--green); color:#fff; border:none; border-radius:9px; padding:12px; font-weight:700; font-size:14.5px; cursor:pointer;}
+  .login-error{color:#B3413A; font-size:13px; margin-bottom:10px; display:none;}
+
+  /* dashboard */
+  #dashboard{display:none;}
+  header{background:#fff; border-bottom:1px solid var(--border); padding:18px 0;}
+  header .wrap{display:flex; justify-content:space-between; align-items:center;}
+  header h1{font-size:16.5px;}
+  header .sub{font-size:12px; color:var(--ink-soft); font-weight:500;}
+  .btn{font-family:var(--font-body); font-weight:600; font-size:13.5px; padding:9px 16px; border-radius:8px; border:1.5px solid var(--border); background:#fff; cursor:pointer; color:var(--ink);}
+  .btn.primary{background:var(--green); color:#fff; border-color:var(--green);}
+  .btn:hover{border-color:var(--green);}
+
+  main{padding:32px 0 60px;}
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px;}
+  .stat-card{background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px;}
+  .stat-card .lbl{font-size:12px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;}
+  .stat-card .val{font-family:var(--font-display); font-weight:800; font-size:28px; color:var(--green); margin-top:6px;}
+
+  .panels{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px;}
+  .panel{background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px;}
+  .panel h3{font-size:14px; margin-bottom:14px;}
+  .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px;}
+  .bar-row .name{width:120px; flex-shrink:0; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bar-track{flex:1; height:8px; background:var(--bg-soft); border-radius:4px; overflow:hidden;}
+  .bar-fill{height:100%; background:var(--green-light);}
+  .bar-count{width:34px; text-align:right; font-weight:600; flex-shrink:0;}
+
+  .table-panel{background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px;}
+  .table-controls{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
+  .table-controls input, .table-controls select{border:1.5px solid var(--border); border-radius:8px; padding:9px 11px; font-size:13.5px;}
+  .table-controls input{flex:1; min-width:180px;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-soft); padding:8px 10px; border-bottom:1.5px solid var(--border);}
+  td{padding:10px; border-bottom:1px solid var(--border); vertical-align:top;}
+  tr:hover td{background:var(--bg-soft);}
+  .badge{display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; background:var(--bg-soft); color:var(--green);}
+  .empty-state{text-align:center; padding:40px; color:var(--ink-soft); font-size:13.5px;}
+  @media (max-width:900px){ .stat-grid{grid-template-columns:1fr 1fr;} .panels{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>EcoTrack Novatic</h1>
+    <p>Admin dashboard — sign in to continue.</p>
+    <div class="login-error" id="loginError">Incorrect password.</div>
+    <form id="loginForm">
+      <input type="password" id="adminPassword" placeholder="Admin password" required>
+      <button type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
+
+<div id="dashboard">
+  <header>
+    <div class="wrap">
+      <div>
+        <h1>EcoTrack Novatic</h1>
+        <div class="sub">Waitlist admin dashboard</div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" id="exportCsvBtn">Export CSV</button>
+        <button class="btn" id="exportXlsxBtn">Export Excel</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="lbl">Total Signups</div><div class="val" id="statTotal">—</div></div>
+      <div class="stat-card"><div class="lbl">Today's Signups</div><div class="val" id="statToday">—</div></div>
+      <div class="stat-card"><div class="lbl">Countries</div><div class="val" id="statCountries">—</div></div>
+      <div class="stat-card"><div class="lbl">Top Referrer</div><div class="val" id="statTopReferrer" style="font-size:16px;">—</div></div>
+    </div>
+
+    <div class="panels">
+      <div class="panel">
+        <h3>Signups by Country</h3>
+        <div id="countryBars"></div>
+      </div>
+      <div class="panel">
+        <h3>Signups by Organization Type</h3>
+        <div id="orgTypeBars"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:28px;">
+      <h3>Referral Leaderboard</h3>
+      <table>
+        <thead><tr><th>Organization</th><th>Contact</th><th>Referral Code</th><th>Referrals</th></tr></thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+
+    <div class="table-panel">
+      <h3 style="margin-bottom:14px;">Recent Signups</h3>
+      <div class="table-controls">
+        <input type="text" id="searchInput" placeholder="Search organization, contact, or email…">
+        <select id="countryFilter"><option value="">All countries</option></select>
+        <select id="orgTypeFilter"><option value="">All organization types</option></select>
+        <button class="btn" id="refreshBtn">Refresh</button>
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Organization</th><th>Contact</th><th>Email</th><th>Country</th><th>Type</th><th>Trees/Yr</th><th>Founding</th><th>Referrals</th><th>Joined</th></tr></thead>
+        <tbody id="signupsBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">No signups match your filters.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const loginScreen = document.getElementById('loginScreen');
+  const dashboard = document.getElementById('dashboard');
+  let latestSignups = [];
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = document.getElementById('adminPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+    try{
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      if(!res.ok){
+        errEl.style.display = 'block';
+        return;
+      }
+      loginScreen.style.display = 'none';
+      dashboard.style.display = 'block';
+      loadStats();
+    }catch(err){
+      errEl.textContent = 'Network error — please try again.';
+      errEl.style.display = 'block';
+    }
+  });
+
+  function bar(container, entries, total){
+    container.innerHTML = '';
+    entries
+      .sort((a,b) => b[1]-a[1])
+      .slice(0, 8)
+      .forEach(([name, count]) => {
+        const pct = total ? Math.round((count/total)*100) : 0;
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        row.innerHTML = `<div class="name" title="${name}">${name}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-count">${count}</div>`;
+        container.appendChild(row);
+      });
+  }
+
+  function populateFilterOptions(selectEl, values){
+    const current = selectEl.value;
+    selectEl.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+    [...new Set(values)].sort().forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      selectEl.appendChild(opt);
+    });
+    selectEl.value = current;
+  }
+
+  async function loadStats(){
+    const search = document.getElementById('searchInput').value;
+    const country = document.getElementById('countryFilter').value;
+    const orgType = document.getElementById('orgTypeFilter').value;
+    const params = new URLSearchParams({ search, country, orgType });
+
+    const res = await fetch('/api/admin/stats?' + params.toString());
+    if(res.status === 401){
+      dashboard.style.display = 'none';
+      loginScreen.style.display = 'flex';
+      return;
+    }
+    const data = await res.json();
+
+    document.getElementById('statTotal').textContent = data.total.toLocaleString();
+    document.getElementById('statToday').textContent = data.today.toLocaleString();
+    document.getElementById('statCountries').textContent = Object.keys(data.countryCounts).length;
+    document.getElementById('statTopReferrer').textContent = data.topReferrers[0]
+      ? `${data.topReferrers[0].organization_name} (${data.topReferrers[0].referral_count})`
+      : '—';
+
+    bar(document.getElementById('countryBars'), Object.entries(data.countryCounts), data.total);
+    bar(document.getElementById('orgTypeBars'), Object.entries(data.orgTypeCounts), data.total);
+
+    populateFilterOptions(document.getElementById('countryFilter'), Object.keys(data.countryCounts));
+    populateFilterOptions(document.getElementById('orgTypeFilter'), Object.keys(data.orgTypeCounts));
+
+    const lbBody = document.getElementById('leaderboardBody');
+    lbBody.innerHTML = data.topReferrers.length
+      ? data.topReferrers.map(r => `<tr><td>${r.organization_name}</td><td>${r.contact_person}</td><td><span class="badge">${r.referral_code}</span></td><td>${r.referral_count}</td></tr>`).join('')
+      : '<tr><td colspan="4" style="color:var(--ink-soft); text-align:center; padding:20px;">No referrals yet.</td></tr>';
+
+    latestSignups = data.signups;
+    const body = document.getElementById('signupsBody');
+    const empty = document.getElementById('emptyState');
+    if(!data.signups.length){
+      body.innerHTML = '';
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      body.innerHTML = data.signups.map(s => `
+        <tr>
+          <td>#${s.waitlist_position}</td>
+          <td>${s.organization_name}</td>
+          <td>${s.contact_person}</td>
+          <td>${s.email}</td>
+          <td>${s.country}</td>
+          <td>${s.organization_type}</td>
+          <td>${s.expected_trees}</td>
+          <td>${s.founding_partner ? '✓' : '—'}</td>
+          <td>${s.referral_count}</td>
+          <td>${new Date(s.created_at).toLocaleDateString()}</td>
+        </tr>`).join('');
+    }
+  }
+
+  document.getElementById('searchInput').addEventListener('input', debounce(loadStats, 350));
+  document.getElementById('countryFilter').addEventListener('change', loadStats);
+  document.getElementById('orgTypeFilter').addEventListener('change', loadStats);
+  document.getElementById('refreshBtn').addEventListener('click', loadStats);
+
+  function debounce(fn, ms){
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  }
+
+  document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    window.location.href = '/api/admin/export';
+  });
+
+  document.getElementById('exportXlsxBtn').addEventListener('click', () => {
+    if(!latestSignups.length){ alert('No data loaded yet.'); return; }
+    const ws = XLSX.utils.json_to_sheet(latestSignups);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Waitlist');
+    XLSX.writeFile(wb, `ecotrack-waitlist-${Date.now()}.xlsx`);
+  });
+
+  // If already logged in (valid cookie from a previous session), skip the login screen.
+  (async () => {
+    const res = await fetch('/api/admin/stats');
+    if(res.ok){
+      loginScreen.style.display = 'none';
+      dashboard.style.display = 'block';
+      loadStats();
+    }
+  })();
+</script>
+
+</body>
+</html>
