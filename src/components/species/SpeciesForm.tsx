@@ -18,7 +18,7 @@ import {
   WATER_REQUIREMENT_SUGGESTIONS,
   type SpeciesInput,
 } from "@/types/species";
-import type { SpeciesFormErrors } from "@/lib/validation/speciesSchema";
+import type { SpeciesFormErrors } from "@/lib/speciesSchema";
 
 function formatLabel(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);

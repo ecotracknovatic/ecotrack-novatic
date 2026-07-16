@@ -19,7 +19,7 @@ import { SpeciesForm } from "@/components/species/SpeciesForm";
 import { DeleteSpeciesDialog } from "@/components/species/DeleteSpeciesDialog";
 import { useSpeciesDetails } from "@/hooks/species/useSpeciesDetails";
 import { useUpdateSpecies } from "@/hooks/species/useUpdateSpecies";
-import { emptySpeciesForm, validateSpeciesForm, type SpeciesFormErrors } from "@/lib/validation/speciesSchema";
+import { emptySpeciesForm, validateSpeciesForm, type SpeciesFormErrors } from "@/lib/speciesSchema";
 import type { Species, SpeciesInput } from "@/types/species";
 
 export const Route = createFileRoute("/_authenticated/species/$speciesId")({

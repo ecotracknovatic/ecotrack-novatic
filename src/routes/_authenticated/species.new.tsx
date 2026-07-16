@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { SpeciesForm } from "@/components/species/SpeciesForm";
 import { useCreateSpecies } from "@/hooks/species/useCreateSpecies";
-import { emptySpeciesForm, validateSpeciesForm, type SpeciesFormErrors } from "@/lib/validation/speciesSchema";
+import { emptySpeciesForm, validateSpeciesForm, type SpeciesFormErrors } from "@/lib/speciesSchema";
 import type { SpeciesInput } from "@/types/species";
 
 export const Route = createFileRoute("/_authenticated/species/new")({
